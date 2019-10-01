@@ -5,6 +5,7 @@ import java.util
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
+import be.axxes.streamingdemo.Avro4Serde
 import be.axxes.streamingdemo.domain.Song
 import be.axxes.streamingdemo.domain.stream.Played
 import io.confluent.kafka.serializers.KafkaAvroSerializer
@@ -12,12 +13,12 @@ import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.common.serialization.StringSerializer
+import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 
 import scala.io.Source
 import scala.util.Random
 
-object SongProducer {
+object AvroSongProducer {
 
   def main(args: Array[String]): Unit = {
     createTopicIfNotExists()
@@ -26,17 +27,19 @@ object SongProducer {
     props.put("bootstrap.servers", "localhost:9092")
     props.put("acks", "all")
     props.put("key.serializer", classOf[StringSerializer].getName)
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer].getName)
-    props.put("schema.registry.url", "http://localhost:8081")
-    props.put("auto.register.schemas", "false")
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[ByteArraySerializer].getName)
+    //props.put("schema.registry.url", "http://localhost:8081")
+    //props.put("auto.register.schemas", "false")
 
     Thread.sleep(10000)
-    val producer = new KafkaProducer[String, GenericRecord](props)
-    for (i <- 0 until 100) {
+    val producer = new KafkaProducer[String, Array[Byte]](props)
+    for (i <- 0 until 1000) {
+      val serde = Avro4Serde.genericSerde[Played]
+
 
       val played = getPlayedEntry(i)
 
-      val fut = producer.send(new ProducerRecord("songs-played", played))
+      val fut = producer.send(new ProducerRecord("songs-played", serde.serializer().serialize("songs-played", played)))
       fut.get(1000, TimeUnit.MILLISECONDS)
       Thread.sleep(1000)
     }
@@ -58,23 +61,12 @@ object SongProducer {
     println(result)
   }
 
-  private def getPlayedEntry(index: Int): GenericRecord = {
+  private def getPlayedEntry(index: Int): Played = {
     val rand = new Random()
     val song = getSongs(rand.nextInt(9))
 
     val customer = getCustomers(rand.nextInt(9))
-    val source = Source.fromURL(getClass.getResource("/played.avsc"))
-    val schema: String = source.mkString
-    val parser = new Schema.Parser
-    val valueRecord = new GenericData.Record(parser.parse(schema))
-
-    valueRecord.put("sequence", index)
-    valueRecord.put("customerId", customer.toString)
-    valueRecord.put("title", song.title)
-    valueRecord.put("artist", song.artist)
-    valueRecord.put("album", song.album)
-
-    valueRecord
+    Played(index, customer.toString, song.title, song.artist, song.album)
   }
 
   private def getCustomers(index : Int) = {

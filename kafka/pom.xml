@@ -18,7 +18,6 @@
         <confluent.version>5.1.2</confluent.version>
         <scalatest.version>3.0.5</scalatest.version>
         <scala-logging.version>3.9.0</scala-logging.version>
-        <avro4s.version>2.0.4</avro4s.version>
     </properties>
 
     <dependencies>
@@ -31,11 +30,6 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams-scala_${scala.compat.version}</artifactId>
             <version>${kafka.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sksamuel.avro4s</groupId>
-            <artifactId>avro4s-core_${scala.compat.version}</artifactId>
-            <version>${avro4s.version}</version>
         </dependency>
 
         <dependency>

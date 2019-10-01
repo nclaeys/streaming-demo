@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Played",
+  "namespace": "be.axxes.streamingdemo.domain.stream",
+  "fields": [
+    {"name": "sequence","type": ["int", "null"]},
+    {"name": "customerId","type": ["string", "null"]},
+    {"name": "title","type": ["string", "null"]},
+    {"name": "artist","type": ["string", "null"]},
+    {"name": "album","type": ["string", "null"]}
+  ]
+}

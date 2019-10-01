@@ -1,8 +1,8 @@
 package be.axxes.streamingdemo.songCount
 
-import be.axxes.streamingdemo.domain.{Customer, PlayedWithCustomerInfo}
+import be.axxes.streamingdemo.domain.Customer
 import be.axxes.streamingdemo.{Avro4Serde, KafkaFactory, StreamTest, StreamingApp}
-import be.axxes.streamingdemo.domain.stream.Played
+import be.axxes.streamingdemo.domain.stream.{Played, PlayedWithCustomerInfo}
 import org.apache.kafka.common.serialization.{LongDeserializer, StringDeserializer}
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.scala.StreamsBuilder
