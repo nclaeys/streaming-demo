@@ -5,12 +5,13 @@ import java.util.concurrent.TimeUnit
 
 import be.axxes.streamingdemo.domain.Song
 import be.axxes.streamingdemo.domain.stream.Played
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 import scala.util.Random
 
-class JsonSongProducer {
+object JsonSongProducer {
   def main(args: Array[String]): Unit = {
 
     val props = new Properties()
@@ -20,11 +21,13 @@ class JsonSongProducer {
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
 
     val producer = new KafkaProducer[String, String](props)
-    for (i <- 0 until 100) {
+    for (i <- 0 until 1000) {
 
       val song = getPlayedEntry
 
-      val serializedSong = new ObjectMapper().writeValueAsString(song)
+      val mapper = new ObjectMapper()
+      mapper.registerModule(DefaultScalaModule)
+      val serializedSong = mapper.writeValueAsString(song)
 
       val fut = producer.send(new ProducerRecord("songs-played-json", serializedSong))
       fut.get(1000, TimeUnit.MILLISECONDS)
