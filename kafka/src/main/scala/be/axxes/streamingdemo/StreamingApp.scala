@@ -42,7 +42,7 @@ object StreamingApp {
       .toStream
       .map { (key, value) => (printWindowedKey(key), value) }
       .peek{ (s,l) => println("---output: " + s + " with value " + l)}
-      .to("songs-played-by-minute")
+      .to("songs-played-by-minute-kafka")
 
     builder.build()
   }

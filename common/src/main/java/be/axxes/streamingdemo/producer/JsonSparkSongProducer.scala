@@ -11,7 +11,7 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 import scala.util.Random
 
-object JsonSongProducer {
+object JsonSparkSongProducer {
   def main(args: Array[String]): Unit = {
 
     val props = new Properties()

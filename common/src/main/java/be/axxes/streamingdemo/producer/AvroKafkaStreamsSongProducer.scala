@@ -1,6 +1,5 @@
 package be.axxes.streamingdemo.producer
 
-import java.nio.file.{Files, Paths}
 import java.util
 import java.util.Properties
 import java.util.concurrent.TimeUnit
@@ -8,17 +7,13 @@ import java.util.concurrent.TimeUnit
 import be.axxes.streamingdemo.Avro4Serde
 import be.axxes.streamingdemo.domain.Song
 import be.axxes.streamingdemo.domain.stream.Played
-import io.confluent.kafka.serializers.KafkaAvroSerializer
-import org.apache.avro.Schema
-import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 
-import scala.io.Source
 import scala.util.Random
 
-object AvroSongProducer {
+object AvroKafkaStreamsSongProducer {
 
   def main(args: Array[String]): Unit = {
     createTopicIfNotExists()
@@ -28,16 +23,15 @@ object AvroSongProducer {
     props.put("acks", "all")
     props.put("key.serializer", classOf[StringSerializer].getName)
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[ByteArraySerializer].getName)
-    //props.put("schema.registry.url", "http://localhost:8081")
-    //props.put("auto.register.schemas", "false")
 
     Thread.sleep(10000)
     val producer = new KafkaProducer[String, Array[Byte]](props)
+    val rand = new Random()
     for (i <- 0 until 1000) {
       val serde = Avro4Serde.genericSerde[Played]
+      val song = getSongs(rand.nextInt(9))
 
-
-      val played = getPlayedEntry(i)
+      val played = Played(i, rand.nextInt(9).toString, song.title, song.artist, song.album)
 
       val fut = producer.send(new ProducerRecord("songs-played", serde.serializer().serialize("songs-played", played)))
       fut.get(1000, TimeUnit.MILLISECONDS)
@@ -59,14 +53,6 @@ object AvroSongProducer {
     val result = adminClient.createTopics(createdTopics)
     result.all()
     println(result)
-  }
-
-  private def getPlayedEntry(index: Int): Played = {
-    val rand = new Random()
-    val song = getSongs(rand.nextInt(9))
-
-    val customerId = rand.nextInt(9)
-    Played(index, customerId.toString, song.title, song.artist, song.album)
   }
 
   private def getSongs(index: Int) = {

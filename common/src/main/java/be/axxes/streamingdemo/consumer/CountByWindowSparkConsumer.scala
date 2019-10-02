@@ -4,8 +4,7 @@ import java.time.Duration
 import java.util.Properties
 
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
-import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.serialization.{LongDeserializer, LongSerializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{LongDeserializer, StringDeserializer}
 
 import scala.collection.JavaConverters._
 
@@ -17,11 +16,12 @@ object CountByWindowConsumer {
     props.put("bootstrap.servers", "localhost:9092")
     props.put("acks", "all")
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, classOf[StringDeserializer].getName)
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[LongDeserializer].getName)
+    //spark only supports string, byte array as value: for simplicity I casted the value to a string
+    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[StringDeserializer].getName)
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
 
     val consumer = new KafkaConsumer(props)
-    val topics = List("songs-played-by-minute")
+    val topics = List("songs-played-by-minute-spark")
     try {
       consumer.subscribe(topics.asJava)
       while (true) {

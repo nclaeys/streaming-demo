@@ -48,7 +48,7 @@ class SongCountByMinute extends StreamTest {
     val stringDeserializer = new StringDeserializer()
     val longDeserializer = new LongDeserializer()
 
-    val output = testDriver.readOutput("songs-played-by-minute", stringDeserializer, longDeserializer)
+    val output = testDriver.readOutput("songs-played-by-minute-kafka", stringDeserializer, longDeserializer)
     OutputVerifier.compareKeyValue(output, key, value)
   }
 

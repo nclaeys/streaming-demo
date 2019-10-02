@@ -34,6 +34,8 @@ object StreamingApp {
       .select(from_json($"value", struct).as("played"))
       .withColumn("ts", lit(current_timestamp()))
       .selectExpr("played.*", "ts")
+
+    val enrichedResult = streamingDf
       .join(customers, $"customerId" === $"id", "left_outer")
       .na.fill("unknown")
       .groupBy($"country")
@@ -43,19 +45,7 @@ object StreamingApp {
       .writeStream
       .outputMode("complete")
       .format("console")
-      /*.outputMode("append")
-      .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "songs-played-by-country")
-      .trigger(Trigger.Continuous("1 second"))*/
       .start()
       .awaitTermination()
-
-    /*val outputKafka = playedSongsDf.writeStream
-      .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "song_count")
-      .option("checkpointLocation", "/opt/spark/streaming-app/checkpoints/song_count")*/
-
   }
 }

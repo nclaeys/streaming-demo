@@ -1,6 +1,5 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.types.{DataTypes, StructType}
 
 object StreamingCountExampleApp {
@@ -32,19 +31,20 @@ object StreamingCountExampleApp {
 
     val aggregateResult = inputDf
       .withWatermark("ts", "1 minute")
-      .groupBy(window($"ts", "1 minute", "1 minute"), $"title")
+      .withColumnRenamed("title", "key")
+      .groupBy(window($"ts", "1 minute", "1 minute"), $"key")
       .count()
+      .withColumn("value", $"count".cast(DataTypes.StringType))
+      .drop($"count")
 
     aggregateResult
       .writeStream
       .outputMode("append")
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "songs-played-by-minute")
+      .option("topic", "songs-played-by-minute-spark")
       .option("checkpointLocation", "/opt/spark/streaming-app/checkpoints/song_count")
-      .trigger(Trigger.Continuous("1 second"))
       .start()
       .awaitTermination()
-
   }
 }
