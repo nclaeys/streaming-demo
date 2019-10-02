@@ -1,18 +1,17 @@
 package be.axxes.streamingdemo.songCount
 
-import be.axxes.streamingdemo.domain.stream.Played
+import be.axxes.streamingdemo._
 import be.axxes.streamingdemo.domain.Customer
-import be.axxes.streamingdemo.{Avro4Serde, KafkaFactory, StreamTest, StreamingApp}
+import be.axxes.streamingdemo.domain.stream.Played
 import org.apache.kafka.common.serialization.{LongDeserializer, StringDeserializer}
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.scala.StreamsBuilder
-import org.apache.kafka.streams.scala.kstream.KTable
 import org.apache.kafka.streams.test.OutputVerifier
 
 class SongCountByCountryOuterJoin extends StreamTest {
 
   override def buildTopology(builder: StreamsBuilder): Topology = {
-    StreamingApp.createSongCountByLocationTopology(builder)
+    GroupByCountryApp.createSongCountByLocationTopology(builder)
   }
 
   test("join song played and customer info exists results in count for correct country") {

@@ -1,7 +1,7 @@
 package be.axxes.streamingdemo.songCount
 
 import be.axxes.streamingdemo.domain.stream.Played
-import be.axxes.streamingdemo.{Avro4Serde, KafkaFactory, StreamTest, StreamingApp}
+import be.axxes.streamingdemo.{Avro4Serde, KafkaFactory, StreamTest, GroupByWindowApp}
 import org.apache.kafka.common.serialization.{LongDeserializer, StringDeserializer}
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.scala.StreamsBuilder
@@ -10,7 +10,7 @@ import org.apache.kafka.streams.test.OutputVerifier
 class SongCountByMinute extends StreamTest {
 
   override def buildTopology(builder: StreamsBuilder): Topology = {
-    StreamingApp.createSongCountByWindowTopology(builder, 60 * 1000)
+    GroupByWindowApp.createSongCountByWindowTopology(builder, 60 * 1000)
   }
 
   test("2 times the same song within a minute should produce 2 for the window") {
