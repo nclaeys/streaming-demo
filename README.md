@@ -1,4 +1,4 @@
-#Streaming demo
+# Streaming demo
 
 The goal of this application is to illustrate spark and kafka streaming capabilities at Haxx.
 All code is written in Scala as I am most familiar with it in this setting.
