@@ -65,12 +65,8 @@ object AvroSongProducer {
     val rand = new Random()
     val song = getSongs(rand.nextInt(9))
 
-    val customer = getCustomers(rand.nextInt(9))
-    Played(index, customer.toString, song.title, song.artist, song.album)
-  }
-
-  private def getCustomers(index : Int) = {
-    index / 10
+    val customerId = rand.nextInt(9)
+    Played(index, customerId.toString, song.title, song.artist, song.album)
   }
 
   private def getSongs(index: Int) = {

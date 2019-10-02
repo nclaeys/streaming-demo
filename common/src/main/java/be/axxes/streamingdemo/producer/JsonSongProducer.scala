@@ -39,13 +39,10 @@ object JsonSongProducer {
     val rand = new Random()
     val song = getSongs(rand.nextInt(9))
 
-    val customer = getCustomers(rand.nextInt(9))
-    Played(rand.nextInt(9), customer.toString, song.title, song.artist, song.album)
+    val customerId = rand.nextInt(9)
+    Played(rand.nextInt(9), customerId.toString, song.title, song.artist, song.album)
   }
 
-  private def getCustomers(index : Int) = {
-    index / 10
-  }
 
   private def getSongs(index: Int) = {
     Seq(Song(index, "My Hero", "Foo fighters", "The colour and the shape"),

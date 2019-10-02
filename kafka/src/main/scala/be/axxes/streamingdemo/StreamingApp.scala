@@ -70,6 +70,6 @@ object StreamingApp {
   }
 
   private def printWindowedKey(key: Windowed[String]) = {
-    key.key() + "#" + key.window().start() + "_" + key.window().end()
+    s"${key.key()}#${key.window().start()}_${key.window().end()}"
   }
 }

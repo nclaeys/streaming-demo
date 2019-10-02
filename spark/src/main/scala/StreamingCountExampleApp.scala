@@ -1,8 +1,9 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.types.{DataTypes, StructType}
 
-object StreamingApp {
+object StreamingCountExampleApp {
 
   def main(args: Array[String]): Unit = {
     implicit val sparkSession: SparkSession = SparkSession.builder()
@@ -13,13 +14,6 @@ object StreamingApp {
     sparkSession.sparkContext.setLogLevel("ERROR")
     import sparkSession.implicits._
 
-    val inputDf = sparkSession.readStream.format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("subscribe", "songs-played-json")
-      .load()
-      .selectExpr("CAST(value as STRING)")
-    //no deserializers can be configured, should be dataframe operations
-
     val struct = new StructType()
       .add("sequence", DataTypes.IntegerType)
       .add("customerId", DataTypes.StringType)
@@ -27,30 +21,30 @@ object StreamingApp {
       .add("artist", DataTypes.StringType)
       .add("album", DataTypes.StringType)
 
-    val playedSongsDf = inputDf.select(from_json($"value", struct).as("played"))
+    val inputDf = sparkSession.readStream.format("kafka")
+      .option("kafka.bootstrap.servers", "localhost:9092")
+      .option("subscribe", "songs-played-json")
+      .load()
+      .selectExpr("CAST(value as STRING)")
+      .select(from_json($"value", struct).as("played"))
       .withColumn("ts", lit(current_timestamp()))
       .selectExpr("played.*", "ts")
 
-    val aggregateTitle = playedSongsDf
+    val aggregateResult = inputDf
       .withWatermark("ts", "1 minute")
-      //window of 1 minutes sliding every 1 minutes
       .groupBy(window($"ts", "1 minute", "1 minute"), $"title")
-
-    val outputConsole = aggregateTitle
       .count()
+
+    aggregateResult
       .writeStream
       .outputMode("append")
-      .format("console")
-      .start()
-
-    /*val outputKafka = playedSongsDf.writeStream
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "song_count")
-      .option("checkpointLocation", "/opt/spark/streaming-app/checkpoints/song_count")*/
-
-    outputConsole.awaitTermination()
-
+      .option("topic", "songs-played-by-minute")
+      .option("checkpointLocation", "/opt/spark/streaming-app/checkpoints/song_count")
+      .trigger(Trigger.Continuous("1 second"))
+      .start()
+      .awaitTermination()
 
   }
 }
